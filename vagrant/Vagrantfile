@@ -45,7 +45,8 @@ Vagrant.configure("2") do |config|
   # the path on the host to the actual folder. The second argument is
   # the path on the guest to mount the folder. And the optional third
   # argument is a set of non-required options.
-  config.vm.synced_folder "data", "/data"
+  config.vm.synced_folder ".", "/vagrant", disabled: true
+  config.vm.synced_folder "data", "/data", disabled: false
 
   # Provider-specific configuration so you can fine-tune various
   # backing providers for Vagrant. These expose provider-specific options.
@@ -64,14 +65,22 @@ Vagrant.configure("2") do |config|
   # information on available options.
 
   # provisioning with a powerhsell script
-  config.vm.provision "shell" do |shell|
-    shell.privileged = true
-    shell.path =  "data/bootstrap.ps1"
-    shell.reboot = true
+  config.winrm.username = 'vagrant\vagrant'
+
+  config.vm.provision "shell" do |set|
+    set.privileged = true
+    set.path =  "data/bootstrap.ps1"
+    set.reboot = true
+  end
+  #
+  config.vm.provision "shell" do |int|
+    int.privileged = true
+    int.path =  "data/installDocker.ps1"
+    int.reboot = true
   end
   # validate docker install
   config.vm.provision "docker" do |doc|
     doc.pull_images "hello-world:nanoserver"
-    doc.run "hello-world:nanoserver"
+    doc.run "hello-world:nanoserver", auto_assign_name: false, name: hello-world
   end
 end
